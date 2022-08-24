@@ -18,4 +18,18 @@ app.get("/:slug", (req, res) => {
   }
 });
 
+app.post("/", (req, res) => {
+  const user = {
+    slug: req.body.slug,
+    name: req.body.name,
+    password: req.body.password,
+    email: req.body.email,
+    city: req.body.city,
+    picture: req.body.picture,
+  };
+
+  users.push(user);
+  res.json(user);
+});
+
 module.exports = app;
