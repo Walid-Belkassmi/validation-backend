@@ -2,6 +2,7 @@ const express = require("express");
 const { body, validationResult } = require("express-validator");
 const app = express();
 const users = require("../users");
+const slugify = require("slugify");
 
 app.get("/", (req, res) => {
   res.json(users);
@@ -18,18 +19,41 @@ app.get("/:slug", (req, res) => {
   }
 });
 
-app.post("/", (req, res) => {
-  const user = {
-    slug: req.body.slug,
-    name: req.body.name,
-    password: req.body.password,
-    email: req.body.email,
-    city: req.body.city,
-    picture: req.body.picture,
-  };
+app.post(
+  "/new-user",
+  body("name").exists().isLength({ min: 4 }).withMessage("Invalid name"),
+  body("password")
+    .exists()
+    .isLength({ min: 8 })
+    .withMessage("Invalid password "),
+  body("city")
+    .exists()
+    .isIn(["Paris", "Tokyo", "Los Angeles"])
+    .withMessage("Invalide city"),
+  body("email").exists().isEmail().withMessage("Invalid email"),
+  (req, res) => {
+    const { errors } = validationResult(req);
 
-  users.push(user);
-  res.json(user);
-});
+    if (errors.length > 0) {
+      res.status(400).json(errors);
+    } else {
+      const user = {
+        name: req.body.name,
+        slug: slugify(req.body.name, {
+          replacement: "-",
+          remove: /[*+~.()'"!:@]/g,
+          lower: true,
+          strict: true,
+        }),
+        password: req.body.password,
+        email: req.body.email,
+        city: req.body.city,
+        profile_picture: req.body.profile_picture,
+      };
+      users.push(user);
+      res.json(user);
+    }
+  }
+);
 
 module.exports = app;
