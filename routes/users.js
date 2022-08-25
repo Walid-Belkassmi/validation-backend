@@ -20,7 +20,7 @@ app.get("/:slug", (req, res) => {
 });
 
 app.post(
-  "/new-user",
+  "/",
   body("name").exists().isLength({ min: 4 }).withMessage("Invalid name"),
   body("password")
     .exists()
